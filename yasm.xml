@@ -116,6 +116,10 @@
         Name="1"
         DisplayName="Raw"
         Switch="-rraw" />
+      <EnumValue
+        Name="2"
+        DisplayName="Cpp"
+        Switch="-rcpp" />
     </EnumProperty>
     <EnumProperty
       Name="Parser"
