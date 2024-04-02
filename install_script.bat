@@ -2,8 +2,8 @@
 setlocal
 
 REM Defined cript variables
-set YASMVERSION=1.3.0
-set YASMDL=https://github.com/yasm/yasm/releases/download/v%YASMVERSION%
+set YASMVERSION=1.3.0-cl
+set YASMDL=https://github.com/pps83/yasm/releases/download/v%YASMVERSION%
 set VSWHEREDL=https://github.com/Microsoft/vswhere/releases/download
 set VSWHEREVERSION=3.1.7
 
