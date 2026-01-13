@@ -17,7 +17,7 @@ REM Check if being called from another instance
 if not "%~1"=="" (
     set MSVC_VER=%~1
     set ISINSTANCE=1
-    echo Installing VS%~1 customisations into %2
+    rem echo Installing VS%~1 customisations into %2
     goto MSVCCALL
 )
 
@@ -44,24 +44,28 @@ if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
 REM Check if already running in an environment with VS setup
 if defined VCINSTALLDIR (
     if defined VisualStudioVersion (
-        if "%VisualStudioVersion%"=="17.0" (
-            echo Existing Visual Studio 2022 environment detected...
+        if "%VisualStudioVersion%"=="18.0" (
+            echo [Visual Studio 2026]
+            set MSVC_VER=18
+            goto MSVCVarsDone
+        ) else if "%VisualStudioVersion%"=="17.0" (
+            echo [Visual Studio 2022]
             set MSVC_VER=17
             goto MSVCVarsDone
         ) else if "%VisualStudioVersion%"=="16.0" (
-            echo Existing Visual Studio 2019 environment detected...
+            echo [Visual Studio 2019]
             set MSVC_VER=16
             goto MSVCVarsDone
         ) else if "%VisualStudioVersion%"=="15.0" (
-            echo Existing Visual Studio 2017 environment detected...
+            echo [Visual Studio 2017]
             set MSVC_VER=15
             goto MSVCVarsDone
         ) else if "%VisualStudioVersion%"=="14.0" (
-            echo Existing Visual Studio 2015 environment detected...
+            echo [Visual Studio 2015]
             set MSVC_VER=14
             goto MSVCVarsDone
         ) else if "%VisualStudioVersion%"=="12.0" (
-            echo Existing Visual Studio 2013 environment detected...
+            echo [Visual Studio 2013]
             set MSVC_VER=12
             goto MSVCVarsDone
         ) else (
@@ -86,11 +90,11 @@ if not exist "%SCRIPTDIR%\vswhere.exe" (
 )
 
 :VSwhereDetection
-REM Use vswhere to list detected installs
+REM Use vswhere to list detected installs and recursively call the same script with params for installation
 for /f "usebackq tokens=* delims=" %%i in (`"%SCRIPTDIR%\vswhere.exe" -prerelease -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
     for /f "delims=" %%a in ('echo %%i ^| find "\18\"') do (
         if not "%%a"=="" (
-            echo Visual Studio 2026 environment detected...
+            echo [Visual Studio 2026]
             call "%~0" "18" "%%i"
             if not ERRORLEVEL 1 (
                 set MSVC18=1
@@ -100,7 +104,7 @@ for /f "usebackq tokens=* delims=" %%i in (`"%SCRIPTDIR%\vswhere.exe" -prereleas
     )
     for /f "delims=" %%a in ('echo %%i ^| find "2022"') do (
         if not "%%a"=="" (
-            echo Visual Studio 2022 environment detected...
+            echo [Visual Studio 2022]
             call "%~0" "17" "%%i"
             if not ERRORLEVEL 1 (
                 set MSVC17=1
@@ -110,7 +114,7 @@ for /f "usebackq tokens=* delims=" %%i in (`"%SCRIPTDIR%\vswhere.exe" -prereleas
     )
     for /f "delims=" %%a in ('echo %%i ^| find "2019"') do (
         if not "%%a"=="" (
-            echo Visual Studio 2019 environment detected...
+            echo [Visual Studio 2019]
             call "%~0" "16" "%%i"
             if not ERRORLEVEL 1 (
                 set MSVC16=1
@@ -120,7 +124,7 @@ for /f "usebackq tokens=* delims=" %%i in (`"%SCRIPTDIR%\vswhere.exe" -prereleas
     )
     for /f "delims=" %%a in ('echo %%i ^| find "2017"') do (
         if not "%%a"=="" (
-            echo Visual Studio 2017 environment detected...
+            echo [Visual Studio 2017]
             call "%~0" "15" "%%i"
             if not ERRORLEVEL 1 (
                 set MSVC15=1
@@ -134,7 +138,7 @@ REM Try and use vswhere to detect legacy installs
 for /f "usebackq tokens=* delims=" %%i in (`"%SCRIPTDIR%\vswhere.exe" -legacy -property installationPath`) do (
     for /f "delims=" %%a in ('echo %%i ^| find "2015"') do (
         if not "%%a"=="" (
-            echo Visual Studio 2015 environment detected...
+            echo [Visual Studio 2015]
             call "%~0" "13" "%%i"
             if not ERRORLEVEL 1 (
                 set MSVC13=1
@@ -144,7 +148,7 @@ for /f "usebackq tokens=* delims=" %%i in (`"%SCRIPTDIR%\vswhere.exe" -legacy -p
     )
     for /f "delims=" %%a in ('echo %%i ^| find "2013"') do (
         if not "%%a"=="" (
-            echo Visual Studio 2013 environment detected...
+            echo [Visual Studio 2013]
             call "%~0" "12" "%%i"
             if not ERRORLEVEL 1 (
                 set MSVC12=1
@@ -173,7 +177,7 @@ if "%SYSARCH%"=="32" (
 REM First check for a environment variable to help locate the VS installation
 if defined VS140COMNTOOLS (
     if exist "%VS140COMNTOOLS%\..\..\VC\bin%MSVCVARSDIR%\vcvars%SYSARCH%.bat" (
-        echo Visual Studio 2015 environment detected...
+        echo [Visual Studio 2015]
         call "%~0" "14" "%VS140COMNTOOLS%\..\..\"
         if not ERRORLEVEL 1 (
             set MSVC14=1
@@ -183,7 +187,7 @@ if defined VS140COMNTOOLS (
 )
 if defined VS120COMNTOOLS (
     if exist "%VS120COMNTOOLS%\..\..\VC\bin%MSVCVARSDIR%\vcvars%SYSARCH%.bat" (
-        echo Visual Studio 2013 environment detected...
+        echo [Visual Studio 2013]
         call "%~0" "12" "%VS120COMNTOOLS%\..\..\"
         if not ERRORLEVEL 1 (
             set MSVC12=1
@@ -196,7 +200,7 @@ REM Check for default install locations based on current system architecture
 if not defined MSVC15 (
     reg.exe query "HKLM\SOFTWARE%WOWNODE%\Microsoft\VisualStudio\SxS\VS7" /v 15.0 >nul 2>&1
     if not ERRORLEVEL 1 (
-        echo Visual Studio 2017 installation detected...
+        echo [Visual Studio 2017]
         for /f "skip=2 tokens=2,*" %%i in ('reg.exe query "HKLM\SOFTWARE%WOWNODE%\Microsoft\VisualStudio\SxS\VS7" /v 15.0') do (
             call "%~0" "15" "%%j"
             if not ERRORLEVEL 1 (
@@ -209,7 +213,7 @@ if not defined MSVC15 (
 if not defined MSVC14 (
     reg.exe query "HKLM\Software%WOWNODE%\Microsoft\VisualStudio\14.0" /v "InstallDir" >nul 2>&1
     if not ERRORLEVEL 1 (
-        echo Visual Studio 2015 installation detected...
+        echo [Visual Studio 2015]
         for /f "skip=2 tokens=2,*" %%i in ('reg.exe query "HKLM\Software%WOWNODE%\Microsoft\VisualStudio\14.0" /v "InstallDir"') do (
             call "%~0" "14" "%%j"
             if not ERRORLEVEL 1 (
@@ -222,7 +226,7 @@ if not defined MSVC14 (
 if not defined MSVC12 (
     reg.exe query "HKLM\Software%WOWNODE%\Microsoft\VisualStudio\12.0" /v "InstallDir" >nul 2>&1
     if not ERRORLEVEL 1 (
-        echo Visual Studio 2013 installation detected...
+        echo [Visual Studio 2013]
         for /f "skip=2 tokens=2,*" %%i in ('reg.exe query "HKLM\Software%WOWNODE%\Microsoft\VisualStudio\12.0" /v "InstallDir"') do (
             call "%~0" "12" "%%j"
             if not ERRORLEVEL 1 (
@@ -318,9 +322,10 @@ if not "%CURRDIR%"=="%CD%" (
 )
 
 REM copy the BuildCustomizations to VCTargets folder
-echo Installing build customisations...
+echo     Installing VS%~1 customisations to "%VCTargetsPath%"
 del /F /Q "%VCTargetsPath%\yasm.*" >nul 2>&1
 copy /B /Y /V "%SCRIPTDIR%\yasm.*" "%VCTargetsPath%\" >nul 2>&1
+del /F /Q "%VCTargetsPath%\yasm.exe" >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo Error: Failed to copy build customisations!
     echo    Ensure that this script is run in a shell with the necessary write privileges
@@ -335,10 +340,21 @@ if exist "%YASMEXE%" (
 ) else if exist "%SCRIPTDIR%\yasm_%YASMVERSION%_win%SYSARCH%.exe" (
     set YASMEXE=%SCRIPTDIR%\yasm_%YASMVERSION%_win%SYSARCH%.exe
     goto InstallYASM
+) else (
+    if not exist "%SCRIPTDIR%\yasm.exe" (
+        echo Downloading required YASM binary to "%SCRIPTDIR%"
+        powershell.exe -Command "(New-Object Net.WebClient).DownloadFile('%YASMDL%/yasm-%YASMVERSION%-win%SYSARCH%.exe', '%SCRIPTDIR%\yasm.exe')" >nul 2>&1
+    )
+    if exist "%SCRIPTDIR%\yasm.exe" (
+        set YASMEXE=%SCRIPTDIR%\yasm.exe
+        goto InstallYASM
+    )
+)
+)
 )
 
 REM Download the latest yasm binary for windows
-echo Downloading required YASM binary...
+echo     Downloading required YASM binary to "%VCINSTALLDIR%"
 del /F /Q "%VCINSTALLDIR%\yasm.exe"  >nul 2>&1
 set YASMDOWNLOAD=%YASMDL%/yasm-%YASMVERSION%-win%SYSARCH%.exe
 powershell.exe -Command "(New-Object Net.WebClient).DownloadFile('%YASMDOWNLOAD%', '%VCINSTALLDIR%\yasm.exe')" >nul 2>&1
@@ -351,7 +367,7 @@ goto Exit
 
 :InstallYASM
 REM copy yasm executable to VC installation folder
-echo Installing existing YASM binary...
+echo     Installing existing YASM binary to "%VCINSTALLDIR%"
 del /F /Q "%VCINSTALLDIR%\yasm.exe" >nul 2>&1
 copy /B /Y /V "%YASMEXE%" "%VCINSTALLDIR%\yasm.exe" >nul 2>&1
 if %ERRORLEVEL% neq 0 (
@@ -359,7 +375,8 @@ if %ERRORLEVEL% neq 0 (
     echo    Ensure that this script is run in a shell with the necessary write privileges
     goto Terminate
 )
-echo Finished Successfully
+rem echo Finished Successfully
+echo.
 goto Exit
 
 :Terminate

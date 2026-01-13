@@ -11,7 +11,7 @@ VSYASM
 
 This project provides a set of build customisations that can be used within Visual Studio to compile assembly code using YASM.
 Provides Visual Studio integration for the YASM assembler.
-Supports Visual Studio 2010, 2012, 2013, 2015, 2017, 2019 and 2022.
+Supports Visual Studio 2010, 2012, 2013, 2015, 2017, 2019, 2022, and 2026.
 
 ## YASM
 
@@ -27,7 +27,7 @@ To use this script simply run '**install_script.bat**' from an elevated (i.e adm
 
 Once installed VSYASM adds an additional usable Build Customization into Visual Studio. To use VSYASM in a project you must enable the customization for any project requiring it by right clicking on the project in the Solution Explorer and selecting 'Build Dependencies -> Build Customisations..' and then selecting VSYASM from the available options.
 
-## Manual Installation (optional)
+## Manual Installation (outdated)
 
 Alternatively, to manually install the extension you will first need to download the required win32 or win64 binary (depending on your system) from the official YASM website [http://yasm.tortall.net](http://yasm.tortall.net).
 
